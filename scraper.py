@@ -3,9 +3,10 @@ from bs4 import BeautifulSoup
 import cloudscraper
 from telegram import Bot
 import asyncio
+import os
 
-TELEGRAM_BOT_TOKEN = "7999751443:AAGnzhygvn5LZFEJVQHaLaVhPuO5gsUZLeY"
-TELEGRAM_CHAT_ID = "@war_newsx"
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
 async def send_telegram_message(message):
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
