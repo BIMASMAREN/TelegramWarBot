@@ -4,6 +4,7 @@ import cloudscraper
 from telegram import Bot
 import asyncio
 import os
+import time 
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
@@ -75,6 +76,7 @@ async def main():
     for article in military_news:
         message = format_arabic_message(article['title'], article['url'])
         print(message)
+        time.sleep(30)
         await send_telegram_message(message)
         print("---")
 
