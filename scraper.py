@@ -9,19 +9,29 @@ TELEGRAM_CHAT_ID = "@war_newsx"
 
 async def send_telegram_message(message):
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
-    await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
+    await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message, parse_mode='HTML')
+
+
 
 def scrape_aljazeera():
     url = "https://www.aljazeera.net/news/"
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
-
+    
     articles = []
     for link in soup.find_all('a', class_='u-clickable-card__link'):
         title = link.text.strip()
         href = link.get('href')
         if title and href:
-            articles.append({'title': title, 'url': url + href if href.startswith('/') else href})
+            # Construct full URL properly
+            if href.startswith('/'):
+                full_url = "https://www.aljazeera.net" + href
+            elif href.startswith('http'):
+                full_url = href
+            else:
+                full_url = url + href
+            
+            articles.append({'title': title, 'url': full_url})
     return articles
 
 def filter_military_news(articles):
@@ -43,17 +53,26 @@ def filter_military_news(articles):
                 break # Move to the next article once a keyword is found
     return filtered_articles
 
+def format_arabic_message(title, url):
+    """Format message with proper RTL Arabic text and URL alias"""
+    # Add RTL control characters for proper Arabic display
+    rtl_title = f"\u202B{title}\u202C"  # RTL embedding characters
+    
+    # Format with HTML for better display using "See Source" as alias
+    message = f"<b>{rtl_title}</b>\n\n🔗 <a href='{url}'>See Source</a>"
+    return message
+
 async def main():
     print("Scraping Al Jazeera...")
     aljazeera_articles = scrape_aljazeera()
     print(f"Found {len(aljazeera_articles)} articles from Al Jazeera.")
-
+    
     print("Filtering military and war-related news...")
     military_news = filter_military_news(aljazeera_articles)
     print(f"Found {len(military_news)} military and war-related articles.")
-
+    
     for article in military_news:
-        message = f"Title: {article['title']}\nURL: {article['url']}"
+        message = format_arabic_message(article['title'], article['url'])
         print(message)
         await send_telegram_message(message)
         print("---")
